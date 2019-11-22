@@ -209,51 +209,6 @@ params = parse_args('train')
 params.model = 'WideResNet28_10_r'
 params.dataset = 'cifar'
 params.method = 'srt'
-
-class RandomTranslateWithReflect:
-    '''
-    Translate image randomly
-    Translate vertically and horizontally by n pixels where
-    n is integer drawn uniformly independently for each axis
-    from [-max_translation, max_translation].
-    Fill the uncovered blank area with reflect padding.
-    '''
-
-    def __init__(self, max_translation):
-        self.max_translation = max_translation
-
-    def __call__(self, old_image):
-        xtranslation, ytranslation = np.random.randint(-self.max_translation,
-                                                       self.max_translation + 1,
-                                                       size=2)
-        xpad, ypad = abs(xtranslation), abs(ytranslation)
-        xsize, ysize = old_image.size
-
-        flipped_lr = old_image.transpose(Image.FLIP_LEFT_RIGHT)
-        flipped_tb = old_image.transpose(Image.FLIP_TOP_BOTTOM)
-        flipped_both = old_image.transpose(Image.ROTATE_180)
-
-        new_image = Image.new("RGB", (xsize + 2 * xpad, ysize + 2 * ypad))
-
-        new_image.paste(old_image, (xpad, ypad))
-
-        new_image.paste(flipped_lr, (xpad + xsize - 1, ypad))
-        new_image.paste(flipped_lr, (xpad - xsize + 1, ypad))
-
-        new_image.paste(flipped_tb, (xpad, ypad + ysize - 1))
-        new_image.paste(flipped_tb, (xpad, ypad - ysize + 1))
-
-        new_image.paste(flipped_both, (xpad - xsize + 1, ypad - ysize + 1))
-        new_image.paste(flipped_both, (xpad + xsize - 1, ypad - ysize + 1))
-        new_image.paste(flipped_both, (xpad - xsize + 1, ypad + ysize - 1))
-        new_image.paste(flipped_both, (xpad + xsize - 1, ypad + ysize - 1))
-
-        new_image = new_image.crop((xpad - xtranslation,
-                                    ypad - ytranslation,
-                                    xpad + xsize - xtranslation,
-                                    ypad + ysize - ytranslation))
-        return new_image
-
     
 class TransformsC10:
     '''
@@ -262,15 +217,7 @@ class TransformsC10:
 
     def __init__(self):
         # flipping image along vertical axis
-        self.flip_lr = transforms.RandomHorizontalFlip(p=0.5)
         # image augmentation functions
-        normalize = transforms.Normalize(mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
-                                         std=[x / 255.0 for x in [63.0, 62.1, 66.7]])
-        col_jitter = transforms.RandomApply([
-            transforms.ColorJitter(0.4, 0.4, 0.4, 0.2)], p=0.8)
-        img_jitter = transforms.RandomApply([
-            RandomTranslateWithReflect(4)], p=0.8)
-        rnd_gray = transforms.RandomGrayscale(p=0.25)
         
         self.train_transform = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
