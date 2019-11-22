@@ -26,7 +26,7 @@ python cifar_robust_train.py
 ### Running code on CUB for WSOL
 ------------
 ```
-cd WSOL/datalist/
+cd WSOL_CUB/datalist/
 wget http://www.vision.caltech.edu/visipedia-data/CUB-200-2011/CUB_200_2011.tgz
 tar -xvf CUB_200_2011.tgz
 cd ..
