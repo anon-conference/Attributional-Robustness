@@ -138,7 +138,7 @@ def main():
             'epsilon': 2.0 / 255.0,
             'num_steps': 3,
             'step_size': 1.5/ 255.0,
-            'k_top': 12000,
+            'k_top': 15000,
             'img_size':224,
             'n_classes': num_classes
         
